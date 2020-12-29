@@ -25,7 +25,7 @@
 
     .EXAMPLE
 
-      .\GPO-Creations.ps1
+      .\GPO-Creation.ps1
 
     #>
 
