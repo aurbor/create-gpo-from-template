@@ -35,6 +35,4 @@ Included in the deployment package created by the script above. This script will
 
 Evan Wilson – evan@aurbor.com
 
-Distributed under the XYZ license. See ``LICENSE`` for more information.
-
 [https://github.com/aurbor](https://github.com/aurbor/)
