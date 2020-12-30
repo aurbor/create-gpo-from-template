@@ -12,7 +12,8 @@
 
     .DESCRIPTION
 
-      Used in conjunction with GPO-Creation.ps1 for deploying a baseline GPO that has been created somewhere else.
+      Used in conjunction with GPO-Creation.ps1 for deploying a baseline GPO that has been created somewhere else. This script relies upon the 7Zip4Powershell Module
+      (https://www.powershellgallery.com/packages/7Zip4Powershell/1.9.0) which will be installed automatically if it's not already on the machine.
 
     .PARAMETER gpoName
 
@@ -28,23 +29,38 @@
     # Change if you want to use a different GPO name, but must match the GPO name used in the GPO-Creation.ps1 script when being distributed.
     $gpoName = "Software Restrictions"
 
+## Check for 7Zip4Powershell Module, Install If Not Found
+
+If (Get-Module -ListAvailable -Name 7Zip4Powershell) {
+    Write-Output "7Zip4Powershell Module Found. Continuing..."
+} 
+else {
+    Write-Output "7Zip4Powershell Module Not Found. Installing..."
+    Install-Module -Name 7Zip4Powershell -RequiredVersion 1.9.0 -Force -AllowClobber
+    Write-Output "7Zip4Powershell Module Now Installed. Continuing..."
+}
+
+
+
+function New-Folder ($name) {
+    If (Test-Path "$PSScriptRoot\$name") {
+        Write-Output "$name Folder Exists..."
+    } Else {
+        Write-Output "$name Folder Doesn't Exist..."
+        New-Item -ItemType Directory -Path "$PSScriptRoot\$name" | Out-Null
+    }
+}
+
 ## Check/Setup Folder Structure
 
     # Check and Create Logs folder
-    If (Test-Path "$PSScriptRoot\Logs") {
-        Write-Output "Logging Folder Exists..."
-    } Else {
-        Write-Output "Logging Folder Doesn't Exist..."
-        New-Item -ItemType Directory -Path "$PSScriptRoot\Logs" | Out-Null
-    }
+    New-Folder "Logs"
 
     # Check and Create Packages folder
-    If (Test-Path "$PSScriptRoot\Packages") {
-        Write-Output "Packages Folder Exists..."
-    } Else {
-        Write-Output "Packages Folder Doesn't Exist..."
-        New-Item -ItemType Directory -Path "$PSScriptRoot\Packages" | Out-Null
-    }
+    New-Folder "Packages"
+    
+    # Check and Create Working folder
+    New-Folder "Working"
 
 ## Start Transcript/Log File
     
@@ -55,34 +71,31 @@
     Write-Output "Importing Modules..."
     Import-Module GroupPolicy
     Import-Module ActiveDirectory
-
-## Set Configuration Variables
-
-    Write-Output "Initializing Variables..."
+    Import-Module 7Zip4Powershell
 
 ## Clean Up Working Directory
     
     Write-Output "Cleaning Working Folder..."
-    Get-ChildItem $PSScriptRoot -Exclude "Packages", "Logs", GPO-Backup.ps1 | Remove-Item -Recurse -Force | Out-Null
+    Get-ChildItem "$PSScriptRoot\Working" | Remove-Item -Recurse -Force | Out-Null
     Write-Output "Working Folder Cleaned..."
 
 ## Get latest GPO Creation Script (GPO-Creation.ps1) from GitHub for Deployment Package
     $scriptUrl = "https://raw.githubusercontent.com/aurbor/create-gpo-from-template/main/GPO-Creation.ps1"
-    $scriptOutputFile = "$PSScriptRoot\GPO-Creation.ps1"
+    $scriptOutputFile = "$PSScriptRoot\Working\GPO-Creation.ps1"
     Invoke-WebRequest -Uri $scriptUrl -OutFile $scriptOutputFile
 
-## Find GPO and Back it up in preparation of packaging.
+## Find GPO and back it up in preparation of packaging.
 
     $gpoExport = Get-GPO -name $gpoName
-    Backup-GPO -Guid $gpoExport.Id -Path $PSScriptRoot | Out-Null
+    Backup-GPO -Guid $gpoExport.Id -Path "$PSScriptRoot\Working" | Out-Null
 
 ## Package Exported GPO and Creation script - ready for distribution.
 
     Write-Output "Creating Deployment Package..."
-    Get-ChildItem | Where {($_.Name -notlike "Logs") -and ($_.name -notlike "Packages") -and ($_.Name -notlike "GPO-Backup.ps1")} | Compress-Archive -DestinationPath $PSScriptRoot\Packages\GPO-Deployment-$(Get-Date -Format `"dd.MM.yyyy.HHmm`").zip -Force
+    Compress-7Zip -ArchiveFileName ".\Packages\GPO-Deployment-$(Get-Date -Format `"dd.MM.yyyy.HHmm`").zip" -Path "$($PSScriptRoot)\Working\." -Format Zip
     Write-Output "Post Deployment Cleanup..."
-    Get-ChildItem $PSScriptRoot -Exclude "Packages", "Logs", GPO-Backup.ps1 | Remove-Item -Recurse -Force | Out-Null
-    Write-Output "Folder Cleaned, Deployment ZIP created..."
+    Get-ChildItem "$PSScriptRoot\Working" | Remove-Item -Recurse -Force | Out-Null
+    Write-Output "Folder Cleaned, Deployment ZIP created in 'Packages' Folder..."
 
 ## End Logging
 
