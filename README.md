@@ -5,6 +5,8 @@ These two scripts are used to Export an existing GPO, and then create the same G
 
 ## GPO-Backup.ps1
 
+![](Documentation/GPO-Backup.gif)
+
 Download just this script to get started!
 
 This script will create a backup/export of an existing GPO with the name '**Software Restrictions**' on an existing Domain Controller. Create your GPO, name it '**Software Restrictions**', and then run this script on the domain controller to export the existing object, download the deployment script, and then package the exported GPO and deployment script into a ZIP Archive that can be distributed for GPO deployment.
@@ -12,6 +14,8 @@ This script will create a backup/export of an existing GPO with the name '**Soft
 **This script uses the 7Zip4Powershell Module from https://www.powershellgallery.com/packages/7Zip4Powershell/1.9.0 which will be installed on the machine automatically if it's not already there.**
 
 ## GPO-Creation.ps1
+
+![](Documentation/GPO-Creation.gif)
 
 **You do NOT need to download this file.**
 
