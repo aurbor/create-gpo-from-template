@@ -31,7 +31,7 @@
 
 ## Start Transcript/Log File
 
-    Start-Transcript -Path "$PSScriptRoot\GPO-Creation-$(Get-Date -Format `"MM.dd.yyyy`").log"
+Start-Transcript -Path "$PSScriptRoot\GPO-Creation-$(Get-Date -Format `"MM.dd.yyyy`").log"
 
 ## Import Group Policy Module for GPO cmdlets and AD Module for Domain Query
 
@@ -43,23 +43,23 @@
 
     Write-Output "Initializing Variables..."
 
-# Change if you want to use a different GPO name, but must match the exported GPO that is packaged with the script
+    # Change if you want to use a different GPO name, but must match the exported GPO that is packaged with the script
     $gpoName = "Software Restrictions"
 
-# This will link to the root of the domain by default.
+    # This will link to the root of the domain by default.
     $linkTarget = $(Get-ADDomain).DistinguishedName
 
 ## Check, Clean & Create New GPO
 
     If (Get-GPO -Name $gpoName -ErrorAction SilentlyContinue) {
-        Write-Output "GPO Already exists, removing..."
-        Remove-GPO -Name $gpoName
+        Write-Output "GPO Already Exists, Updating Existing GPO..."
     } Else {
-        Write-Output "No existing GPO, continuing..."
+        Write-Output "No existing GPO, Creating New GPO Linked to Root of Domain..."
+        New-GPO -Name $gpoName | New-GPLink -Target $linkTarget -LinkEnabled Yes | Out-Null
+        Write-Output "New Baseline GPO Created..."
     }
 
-    Write-Output "Creating new GPO with new settings..."
-    New-GPO -Name $gpoName | New-GPLink -Target $linkTarget -LinkEnabled Yes | Out-Null
+    # Load Named GPO in Memory To Be Updated
     $GPO = Get-GPO -Name $gpoName
 
 ## Import Packaged GPO Into New Object Created Above

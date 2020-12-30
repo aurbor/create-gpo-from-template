@@ -36,9 +36,10 @@ Included in the deployment package created by the script above. This script will
 
 ## Release History
 
-* 0.0.1
+* 1.1
+    * Updated GPO Creation Script to Leave Existing Links in Place if the GPO already exists.
+* 1.0
     * Working in Progress/Testing
-
 ## Meta
 
 Evan Wilson – evan@aurbor.com
