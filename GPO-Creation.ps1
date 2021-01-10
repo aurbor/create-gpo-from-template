@@ -17,6 +17,10 @@
       folder must be created and packaged with another script or manually from an existing domain controller. There
       are no parameters to name.
 
+      In addition to creating the GPO, it will assign the following read permissions/filtering to it:
+      Authenticated Users
+      Domain\Kantoor
+
       The script will log its processes to a logfile in the same folder where the script is located.
 
     .PARAMETER gpoName
@@ -59,13 +63,24 @@ Start-Transcript -Path "$PSScriptRoot\GPO-Creation-$(Get-Date -Format `"MM.dd.yy
         Write-Output "New Baseline GPO Created..."
     }
 
-    # Load Named GPO in Memory To Be Updated
+## Load Named GPO in Memory To Be Updated
+
     $GPO = Get-GPO -Name $gpoName
 
 ## Import Packaged GPO Into New Object Created Above
 
     Write-Output "Copying Settings from Backup GPO located at $PSScriptRoot..."
     Import-GPO -BackupGpoName $gpoName -Path "$PSScriptRoot" -TargetGuid $GPO.Id | Out-Null
+
+## Check for Kantoor Group and Assign Permissions if it Exists
+    
+    if ($kantoorGroup = Get-ADGroup -Filter {name -like "*Kantoor*"}) {
+        Write-Output "Kantoor Group found. Adding Permissions for Kantoor group..."
+        Set-GPPermissions -Name $gpoName -TargetName $kantoorGroup.Name -TargetType Group -PermissionLevel GpoApply -Replace | Out-Null
+        Write-Output "Permissions applied to $($gpoName) for Kantoor AD Group..."
+    } Else {
+        Write-Output "There is no Kantoor group, skipping setting permissions..."
+    }
 
     Write-Output "GPO Configuration complete!"
 
