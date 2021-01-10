@@ -74,7 +74,7 @@ Start-Transcript -Path "$PSScriptRoot\GPO-Creation-$(Get-Date -Format `"MM.dd.yy
 
 ## Check for Kantoor Group and Assign Permissions if it Exists
     
-    if ($kantoorGroup = Get-ADGroup -Filter {name -like "*Kantoor*"}) {
+    if ($kantoorGroup = Get-ADGroup -Filter {name -eq "Kantoor"}) {
         Write-Output "Kantoor Group found. Adding Permissions for Kantoor group..."
         Set-GPPermissions -Name $gpoName -TargetName $kantoorGroup.Name -TargetType Group -PermissionLevel GpoApply -Replace | Out-Null
         Write-Output "Permissions applied to $($gpoName) for Kantoor AD Group..."
