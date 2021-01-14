@@ -45,16 +45,13 @@ function New-Folder ($name) {
     # Update with the URL where the deployment zip file is held. This must be a publicly available URL.
     $packageURL = "https://icespomig.blob.core.windows.net/public/Scripts/GPO-Deployment.zip"
 
-## Clean Up Working Directory
-    
-Write-Output "Cleaning Working Folder..."
-Get-ChildItem "$PSScriptRoot\Working" | Remove-Item -Recurse -Force | Out-Null
-Write-Output "Working Folder Cleaned..."
-
 ## Download the Deployment Package
 
-    Write-Output "Downloading Deployment Package..."
     New-Folder "Working"
+    Write-Output "Creating And Cleaning Working Folder..."
+    Get-ChildItem "$PSScriptRoot\Working" | Remove-Item -Recurse -Force | Out-Null
+    Write-Output "Working Folder Cleaned..."
+    Write-Output "Downloading Deployment Package..."
     $packageOutputFile = "$PSScriptRoot\Working\SoftwareRestrictions.zip"
     Invoke-WebRequest -Uri $packageURL -OutFile $packageOutputFile
 
