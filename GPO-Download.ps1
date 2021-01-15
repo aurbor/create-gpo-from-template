@@ -43,7 +43,7 @@ function New-Folder ($name) {
     Write-Output "Initializing Variables..."
 
     # Update with the URL where the deployment zip file is held. This must be a publicly available URL.
-    $packageURL = "https://icespomig.blob.core.windows.net/public/Scripts/GPO-Deployment.zip"
+    $packageURL = "https://www.yourdomain.com/DeploymentPackage.zip"
 
 ## Download the Deployment Package
 
